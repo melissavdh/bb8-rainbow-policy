@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<policy xmlns="http://www.mulesoft.org/schema/mule/policy"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:spring="http://www.springframework.org/schema/beans"
+        xmlns:mule="http://www.mulesoft.org/schema/mule/core"
+        xmlns:mule-ss="http://www.mulesoft.org/schema/mule/spring-security"
+        xmlns:ss="http://www.springframework.org/schema/security"
+        xmlns:api-platform-gw="http://www.mulesoft.org/schema/mule/api-platform-gw"
+        xmlns:http="http://www.mulesoft.org/schema/mule/http"
+        xsi:schemaLocation="http://www.mulesoft.org/schema/mule/policy http://www.mulesoft.org/schema/mule/policy/current/mule-policy.xsd
+              http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+              http://www.mulesoft.org/schema/mule/spring-security http://www.mulesoft.org/schema/mule/spring-security/current/mule-spring-security.xsd
+              http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-current.xsd
+              http://www.mulesoft.org/schema/mule/api-platform-gw http://www.mulesoft.org/schema/mule/api-platform-gw/current/mule-api-platform-gw.xsd
+              http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+              http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	
+	<http:request-config name="HTTP_Request_Configuration" host="{{ bb8BaseUriHost }}" basePath="{{ bb8BaseUriPath }}" />
+    <!--
+        A pointcut controls the scope of a policy application. You can use
+        different types of conditions to determine if the policy must be
+        applied.
+
+        api-platform-gw:api-pointcut: Applies the policy to a particular API.
+        apiName/apiVersion values are compared against the auto-discovery
+        global element defined in your Mule project.
+        See: https://docs.mulesoft.com/api-manager/api-auto-discovery
+
+        For other kinds of pointcut conditions see: 
+        https://docs.mulesoft.com/api-manager/applying-custom-policies
+    -->
+    <pointcut>
+        <!--
+            This file is a policy template, in the final XML deployed to Mule
+            the names surrounded by double bracket will be replaced with
+            configuration parameters.
+        -->
+        <api-platform-gw:api-pointcut apiName="{{ apiName }}" apiVersion="{{ apiVersionName }}"/>
+    </pointcut>
+
+    <!-- 
+        The before tag executes before your API flows. In this tag you can
+        filter or manipulate the incoming message.
+    -->
+    <before>
+		<mule:enricher source="#[payload]" target="#[flowVars.response]">
+			<http:request config-ref="HTTP_Request_Configuration" path="/colour/rainbow" method="POST">
+	            <http:request-builder>
+	                <http:query-param paramName="client_id" value="30911e763bb447d7927add147c60f89d"/>
+	                <http:query-param paramName="client_secret" value="a0288d9700504ca3A58B3335F1BEF438"/>
+	            </http:request-builder>
+        	</http:request>
+		</mule:enricher>      
+	</before>
+
+    <mule:processor-chain name="policyViolation">
+        <mule:logger message="The custom policy filtered the message #[message.getId()] based on a MEL query" level="DEBUG" />
+        <mule:set-property propertyName="http.status" value="403"/>
+        <mule:set-property propertyName="Content-Type" value="application/json"/>
+        <mule:set-payload value='{ "error" : "Custom Policy: {{ denied-message }}"}'/>
+    </mule:processor-chain>
+</policy>

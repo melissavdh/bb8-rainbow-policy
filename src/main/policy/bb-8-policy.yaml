@@ -1,0 +1,50 @@
+#
+# This is an example of a Custom Policy Definition file.
+# This file is used by API Platform to:
+# - Auto-generate a configuration UI for your custom policy.
+# - Determine policy dependencies
+#
+# See: https://docs.mulesoft.com/api-manager/applying-custom-policies#policy-definition 
+
+# Name used to describe the policy in API Platform
+name: BB-8 Disco Policy
+
+# A more detailed description of the policy
+description: Make BB-8 party at the disco when this API is called.
+
+# Category is just a plain text used in API Platform to list policies
+category: Fun
+
+# True if the policy can work on its own or false if the policy can be 
+# applied only as part of another policy.
+standalone: true
+
+requiresConnectivity: false
+
+# A list of strings that describes characteristics provided by this policy.
+# API Platform uses an indirect dependency mechanisms: policies can provide
+# or require characteristics, the platform will inform you about requirements
+# but it will not force you to use a particular policy
+providedCharacteristics: [Just a bit of fun]
+requiredCharacteristics: []
+
+# This defines custom configuration parameters for your policy template
+configuration:
+  - propertyName: bb8BaseUriHost
+    name: BB-8 system API host.
+    description: >
+      The host part of the base URL of the BB-8 system API to use.
+    type: string
+    defaultValue:
+    optional: false
+    sensitive: false
+    allowMultiple: false
+  - propertyName: bb8BaseUriPath
+    name: BB-8 system API path.
+    description: >
+      The path of the base URL of the BB-8 system API to use.
+    type: string
+    defaultValue:
+    optional: false
+    sensitive: false
+    allowMultiple: false
